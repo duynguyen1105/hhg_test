@@ -41,7 +41,7 @@ export default function FormDialog(props: any) {
     position: "",
   });
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const [isError, setIsError] = useState(initialIsError);
 
