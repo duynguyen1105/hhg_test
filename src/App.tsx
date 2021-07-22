@@ -1,10 +1,8 @@
-import React from 'react'
-import Counter from './components/Counter/Counter'
+import React from "react";
+import Layout from "./components/Layout";
 
 const App = () => {
-  return (
-    <Counter/>
-  )
-}
+  return <Layout/>;
+};
 
-export default App
+export default App;
