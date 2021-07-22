@@ -1,8 +1,4 @@
-import {
-  Button,
-  ButtonGroup, Container,
-  Typography
-} from "@material-ui/core";
+import { Button, ButtonGroup, Container, Typography } from "@material-ui/core";
 import Paper from "@material-ui/core/Paper";
 import { createStyles, Theme, withStyles } from "@material-ui/core/styles";
 import Table from "@material-ui/core/Table";
@@ -19,7 +15,7 @@ import ConfirmDialog from "./common/ConfirmDialog";
 import Loading from "./common/Loading";
 import Notification from "./common/Notification";
 import FormDialog from "./FormDialog";
-import TablePaginationActions from "./TablePaginationActions";
+import TablePaginationActions from "./common/TablePaginationActions";
 
 const StyledTableCell = withStyles((theme: Theme) =>
   createStyles({
@@ -42,7 +38,6 @@ const StyledTableRow = withStyles((theme: Theme) =>
     },
   })
 )(TableRow);
-
 
 export default function EmployeeTable() {
   const [employeeData, setEmployeeData] = useState<any[]>([]);

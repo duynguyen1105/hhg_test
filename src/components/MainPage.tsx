@@ -28,7 +28,7 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
-export default function Layout() {
+export default function MainPage() {
   const [value, setValue] = React.useState(0);
 
   const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {

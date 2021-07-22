@@ -1,8 +1,15 @@
 import {
-    Button,
-    ButtonGroup, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, makeStyles, Typography
+  Button,
+  ButtonGroup,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  makeStyles,
+  Typography,
 } from "@material-ui/core";
-import WarningIcon from '@material-ui/icons/Warning';
+import WarningIcon from "@material-ui/icons/Warning";
 import React from "react";
 
 const useStyles = makeStyles((theme) => ({
@@ -39,7 +46,7 @@ export default function ConfirmDialog(props: any) {
     <Dialog open={confirmDialog.isOpen} classes={{ paper: classes.dialog }}>
       <DialogTitle className={classes.dialogTitle}>
         <IconButton disabled className={classes.titleIcon}>
-          <WarningIcon className={classes.titleIcon}/>
+          <WarningIcon className={classes.titleIcon} />
         </IconButton>
       </DialogTitle>
       <DialogContent className={classes.dialogContent}>
