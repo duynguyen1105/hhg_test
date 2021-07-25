@@ -68,7 +68,7 @@ export default function EmployeeTable() {
 
   const fetchData = async () => {
     const employeeData = await apiCaller("/", "get", null);
-    setEmployeeData(employeeData?.data);
+    setEmployeeData(employeeData?.data.reverse());
     setLoading(false);
   };
 
