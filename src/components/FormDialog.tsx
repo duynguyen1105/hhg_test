@@ -6,8 +6,34 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import TextField from "@material-ui/core/TextField";
 import React, { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import apiCaller from "../utils/apiCaller";
 import Loading from "./common/Loading";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+
+type EmployeeValue = {
+  firstname: string;
+  lastname: string;
+  email: string;
+  position: string;
+};
+
+const schema = yup.object().shape({
+  firstname: yup
+    .string()
+    .required("First Name is required")
+    .max(32, "First Name must be less than 20 characters"),
+  lastname: yup
+    .string()
+    .required("Last Name is required")
+    .max(32, "Last Name must be less than 20 characters"),
+  email: yup
+    .string()
+    .required("Email is required")
+    .email("Please enter a valid email"),
+  position: yup.string().required("Position is required"),
+});
 
 export default function FormDialog(props: any) {
   const {
@@ -26,24 +52,29 @@ export default function FormDialog(props: any) {
     position: "",
   };
 
-  const initialIsError = {
-    firstname: false,
-    lastname: false,
-    email: false,
-    position: false,
-  };
+  const [dataEmployee, setDataEmployee] = useState<EmployeeValue>(initialData);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const [dataEmployee, setDataEmployee] = useState<any>(initialData);
-  const [errorsMessage, setErrorsMessage] = useState({
-    firstname: "",
-    lastname: "",
-    email: "",
-    position: "",
-  });
+  useEffect(() => {
+    fetchData();
+  }, [id]);
 
-  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    if (dataEmployee) {
+      setValue("firstname", dataEmployee.firstname);
+      setValue("lastname", dataEmployee.lastname);
+      setValue("email", dataEmployee.email);
+      setValue("position", dataEmployee.position);
+    }
+  }, [dataEmployee]);
 
-  const [isError, setIsError] = useState(initialIsError);
+  const {
+    handleSubmit,
+    control,
+    setValue,
+    formState: { errors },
+    clearErrors,
+  } = useForm<EmployeeValue>({ resolver: yupResolver(schema) });
 
   const fetchData = async () => {
     setDataEmployee(initialData);
@@ -55,70 +86,27 @@ export default function FormDialog(props: any) {
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, [id]);
-
-  const onChange = async (event: any) => {
-    if (event.target.value.length === 0) {
-      setIsError({ ...isError, [event.target.name]: true });
-      setErrorsMessage({
-        ...errorsMessage,
-        [event.target.name]: "This field is required!",
-      });
-    } else {
-      setIsError({ ...isError, [event.target.name]: false });
-      setErrorsMessage({ ...errorsMessage, [event.target.name]: "" });
-    }
-
-    if (event.target.name === "email") {
-      if (!validateEmail(event.target.value)) {
-        setIsError({ ...isError, email: true });
-        setErrorsMessage({ ...errorsMessage, email: "Invalid email!" });
-      } else {
-        setIsError({ ...isError, [event.target.name]: false });
-        setErrorsMessage({ ...errorsMessage, [event.target.name]: "" });
-      }
-    }
-
-    setDataEmployee({
-      ...dataEmployee,
-      [event.target.name]: event.target.value,
-    });
-  };
-
-  const validateEmail = (email: string) => {
-    const re =
-      /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    return re.test(email);
-  };
-
-  const onSave = async (event: any) => {
-    event.preventDefault();
-    if (JSON.stringify(isError) === JSON.stringify(initialIsError)) {
-      handleClose();
-      typeAction === "add"
-        ? await handleAddItem(dataEmployee)
-        : await handleEditItem(dataEmployee, id);
-      setDataEmployee(initialData);
-      fetchData();
-      setIsError(initialIsError);
-    }
-  };
-
-  const onClose = () => {
+  const onSave = async (data: any) => {
     handleClose();
-    setErrorsMessage({
-      firstname: "",
-      lastname: "",
-      email: "",
-      position: "",
-    });
+    typeAction === "add"
+      ? await handleAddItem(data)
+      : await handleEditItem(data, id);
+    setDataEmployee(initialData);
+    fetchData();
+  };
+
+  const handleOnClose = () => {
+    clearErrors(["firstname", "lastname", "email", "position"]);
+    handleClose();
   };
 
   return (
-    <Dialog open={open} onClose={onClose} aria-labelledby="form-dialog-title">
-      <form noValidate>
+    <Dialog
+      open={open}
+      onClose={handleOnClose}
+      aria-labelledby="form-dialog-title"
+    >
+      <form onSubmit={handleSubmit((data) => onSave(data))}>
         <DialogTitle id="form-dialog-title">
           <Typography variant="h5" style={{ color: "#4d7cc1" }}>
             {typeAction === "add" ? "Add new employee" : "Edit employee"}
@@ -129,70 +117,85 @@ export default function FormDialog(props: any) {
 
           <Grid container alignItems="flex-start" spacing={2}>
             <Grid item xs={12}>
-              <TextField
-                fullWidth
-                required
+              <Controller
+                render={({ field: { value, onChange, ref } }) => (
+                  <TextField
+                    value={value}
+                    onChange={onChange}
+                    inputRef={ref}
+                    fullWidth
+                    label="First Name *"
+                    error={errors.firstname ? true : false}
+                    helperText={errors.firstname?.message}
+                  />
+                )}
                 name="firstname"
-                type="text"
-                label="First Name"
-                value={dataEmployee.firstname}
-                onChange={onChange}
-                error={isError.firstname}
-                helperText={errorsMessage.firstname}
+                control={control}
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
-                fullWidth
-                required
+              <Controller
+                render={({ field: { value, onChange, ref } }) => (
+                  <TextField
+                    value={value}
+                    onChange={onChange}
+                    inputRef={ref}
+                    fullWidth
+                    label="Last Name *"
+                    error={errors.lastname ? true : false}
+                    helperText={errors.lastname?.message}
+                  />
+                )}
                 name="lastname"
-                type="text"
-                label="Last Name"
-                value={dataEmployee.lastname}
-                onChange={onChange}
-                error={isError.lastname}
-                helperText={errorsMessage.lastname}
+                control={control}
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
+              <Controller
+                render={({ field: { value, onChange, ref } }) => (
+                  <TextField
+                    value={value}
+                    onChange={onChange}
+                    inputRef={ref}
+                    fullWidth
+                    label="Email *"
+                    error={errors.email ? true : false}
+                    helperText={errors.email?.message}
+                  />
+                )}
                 name="email"
-                fullWidth
-                required
-                type="email"
-                label="Email"
-                value={dataEmployee.email}
-                onChange={onChange}
-                error={isError.email}
-                helperText={errorsMessage.email}
+                control={control}
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
-                fullWidth
-                required
+              <Controller
+                render={({ field: { value, onChange, ref } }) => (
+                  <TextField
+                    value={value}
+                    onChange={onChange}
+                    inputRef={ref}
+                    fullWidth
+                    label="Position *"
+                    error={errors.position ? true : false}
+                    helperText={errors.position?.message}
+                  />
+                )}
                 name="position"
-                type="text"
-                label="Position"
-                value={dataEmployee.position}
-                onChange={onChange}
-                error={isError.position}
-                helperText={errorsMessage.position}
+                control={control}
               />
             </Grid>
           </Grid>
         </DialogContent>
         <DialogActions>
           <ButtonGroup>
-            <Button
-              variant="outlined"
-              color="primary"
-              onClick={onSave}
-              type="submit"
-            >
+            <Button variant="outlined" color="primary" type="submit">
               Submit
             </Button>
-            <Button variant="outlined" color="secondary" onClick={onClose}>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={handleOnClose}
+            >
               Cancel
             </Button>
           </ButtonGroup>
